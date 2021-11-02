@@ -15,3 +15,9 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
+
+artifacts:
+  files:
+    - '**/*.js'
+  discard-paths : yes
+  base-directory: 'src/'
