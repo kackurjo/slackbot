@@ -1,5 +1,6 @@
 import { RTMClient } from '@slack/rtm-api'
 import { WebClient } from '@slack/web-api';
+import { stringify } from 'querystring';
 
 const axios = require('axios').default;
 const http = require('http');
@@ -7,6 +8,13 @@ const xml2js = require('xml2js');
 const dotenv = require('dotenv');
 const constants = require('./constants');
 dotenv.config();
+
+var AWS = require('aws-sdk');
+// Set region
+AWS.config.update({region: 'us-east-1'});
+
+// Create publish parameters
+
 
 const rtm = new RTMClient(process.env.SLACK_OAUTH_TOKEN)
 const web = new WebClient(process.env.SLACK_OAUTH_TOKEN)
@@ -105,6 +113,40 @@ rtm.on('slack_event', async (eventType, event) => {
       }
     } else if (event.text === '!getCommands') {
       sendMessage(event.channel, `Here is the commans available: \n !get= and then a city like !get=helsinki \n !getJoke to get a joke `)
+    } else if (event.text.split(' ')[0] === '!send'){
+
+
+      const date = new Date();
+      const enddate = new Date(date);
+      enddate.setDate(enddate.getDate() + 1);
+      const place = event.text.substr(event.text.indexOf(' ')+1)
+      const url = 'http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::simple&tempreature=temperature&endtime=' + enddate.toISOString() + '&place=' + place;
+      const weatherData = await callFMI({ url, readyHandler: parseFMIResponse });
+
+
+
+      const data = 'Weather in ' + place + '\n Time: ' + weatherData[0].time + ' - Temperature: ' + weatherData[0].temperature + '°C - Wind(m/s): ' + weatherData[0].windspeedms + '\n';
+      
+
+      var params = {
+        Message: data, /* required */
+        TopicArn: 'arn:aws:sns:us-east-1:961857976592:Slack-Topic'
+      };
+
+      // Create promise and SNS service object
+      var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+
+      // Handle promise's fulfilled/rejected states
+      publishTextPromise.then(
+        function(data) {
+          console.log(`Message ${params.Message} sent to the topic ${params.TopicArn}`);
+          console.log("MessageID is " + data.MessageId);
+          sendMessage(event.channel, `Sent to the topic ${params.TopicArn} + \n MessageID is ` + data.MessageId)
+        }).catch(
+          function(err) {
+          console.error(err, err.stack);
+        });
+
     }
   }
 })
