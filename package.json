@@ -12,6 +12,7 @@
   "dependencies": {
     "@slack/rtm-api": "^6.0.0",
     "@slack/web-api": "^6.4.0",
+    "aws-sdk": "^2.1020.0",
     "axios": "^0.24.0",
     "dotenv": "^10.0.0",
     "esm": "^3.2.25",
