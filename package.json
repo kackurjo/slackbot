@@ -1,0 +1,20 @@
+{
+  "name": "slackbot",
+  "version": "1.0.0",
+  "description": "Get a joke for free",
+  "main": "src",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
+  },
+  "author": "Me",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/rtm-api": "^6.0.0",
+    "@slack/web-api": "^6.4.0",
+    "axios": "^0.24.0",
+    "dotenv": "^10.0.0",
+    "esm": "^3.2.25",
+    "xml2js": "^0.4.23"
+  }
+}
